@@ -1,0 +1,252 @@
+library(maptools)
+library(dplyr)
+library(ggplot2)
+library(ggvis)
+
+trmap <- readShapePoly("il.shp")
+class(trmap)
+
+plot(trmap)
+
+str(fortify(trmap))
+
+theme_opts <- list(theme(panel.grid.minor = element_blank(),
+                        panel.grid.major = element_blank(),
+                        panel.background = element_blank(),
+                        plot.background = element_rect(fill="#ffffff"),
+                        panel.border = element_blank(),
+                        axis.line = element_blank(),
+                        axis.text.x = element_blank(),
+                        axis.text.y = element_blank(),
+                        axis.ticks = element_blank(),
+                        axis.title.x = element_blank(),
+                        axis.title.y = element_blank(),
+                        plot.title = element_text(size=22)))
+
+trmap1 <- trmap                                    %>%
+  ggplot(aes(x = long, y= lat, group = group))       +
+  geom_polygon(fill = "grey", colour= "white")       +
+  coord_map("polyconic")                             + 
+  theme_opts
+
+trmap1
+
+Prov_coord <- read.csv("data/Tur_prov.csv", stringsAsFactors = F)
+
+prov_tr <- unique(trmap$NAME)
+prov_en <- c("Adana", 
+"Adiyaman", 
+"Afyon", 
+"Agri", 
+"Amasya", 
+"Ankara", 
+"Antalya", 
+"Artvin", 
+"Aydin", 
+"Balikesir", 
+"Bilecik", 
+"Bingol", 
+"Bitlis", 
+"Bolu", 
+"Burdur", 
+"Bursa", 
+"Canakkale", 
+"Cankiri", 
+"Corum", 
+"Denizli", 
+"Diyarbakir", 
+"Edirne", 
+"Elazig", 
+"Erzincan", 
+"Erzurum", 
+"Eskisehir", 
+"Gaziantep", 
+"Giresun", 
+"Gumushane", 
+"Hakkari", 
+"Hatay", 
+"Isparta", 
+"Mersin", 
+"Istanbul", 
+"Izmir", 
+"Kars", 
+"Kastamonu", 
+"Kayseri", 
+"Kirsehir", 
+"Kilis", 
+"Kocaeli", 
+"Konya", 
+"Kutahya", 
+"Malatya", 
+"Manisa", 
+"K.maras", 
+"Mardin", 
+"Mugla", 
+"Mus", 
+"Nevsehir", 
+"Nigde", 
+"Ordu", 
+"Rize", 
+"Sakarya", 
+"Samsun", 
+"Siirt", 
+"Sinop", 
+"Sirnak", 
+"Tekirdag", 
+"Tokat", 
+"Trabzon", 
+"Tunceli", 
+"Sanliurfa", 
+"Usak", 
+"Van", 
+"Yozgat", 
+"Zonguldak", 
+"Aksaray", 
+"Bayburt", 
+"Karaman", 
+"Kirklareli", 
+"Batman", 
+"Sivas", 
+"Bartin", 
+"Ardahan", 
+"Igdir", 
+"Yalova", 
+"Karabuk", 
+"Kirikkale", 
+"Osmaniye", 
+"Ducze")
+
+prov <- data.frame(prov_tr, prov_en)
+
+id_prov <- trmap@data                                               %>%
+  mutate(prov_en = sapply(NAME, 
+                          function(x)
+                            prov$prov_en[which(prov_tr == x)]))     %>%
+  mutate(prov_tr = as.character(NAME),
+         prov_en = as.character(prov_en))                           %>%
+  select(id = ID, prov_tr, prov_en)
+
+trmapdf <- plyr::join(fortify(trmap), id_prov, by = "id")
+
+trmapdf <- fortify(trmap)                                           %>%
+  mutate(prov_en = sapply(id,
+                          function(x)id_prov$prov_en[which(id == x)]),
+         prov_tr = sapply(id,
+                          function(x)id_prov$prov_tr[which(id == x)]))
+                          
+cap_coord <- c(
+        "Adana", "Adana", "Adana", "35.32000403", "36.99498863", 
+"Ad_yaman", "Adiyaman", "Adiyaman", "38.27992672", "37.77039349", 
+"Afyonkarahisar", "Afyon", "Afyon", "30.55001094", "38.75038535", 
+"A_r_", "Agri", "Agri", "43.05131506", "39.71983522", 
+"Amasya", "Amasya", "Amasya", "35.83304765", "40.65368003", 
+"Ankara", "Ankara", "Ankara", "32.86439164", "39.92723859", 
+"Antalya", "Antalya", "Antalya", "30.69997595", "36.88998212", 
+"Artvin", "Artvin", "Artvin", "41.820483", "41.18082", 
+"Ayd_n", "Aydin", "Aydin", "27.85002071", "37.8499752", 
+"Bal_kesir", "Balikesir", "Balikesir", "27.89001827", "39.6503821", 
+"Bilecik", "Bilecik", "Bilecik", "29.9829966", "40.14999902", 
+"Bing_l", "Bingol", "Bingol", "40.49800256", "38.88500404", 
+"Bitlis", "Bitlis", "Bitlis", "42.12299765", "38.39400012", 
+"Bolu", "Bolu", "Bolu", "31.60612219", "40.73625897", 
+"Burdur", "Burdur", "Burdur", "30.28333554", "37.71666011", 
+"Bursa", "Bursa", "Bursa", "29.06999792", "40.1999868", 
+"Šanakkale", "Canakkale", "Canakkale", "26.4063879", "40.14593325", 
+"Šank_r_", "Cankiri", "Cankiri", "33.62100359", "40.60700101", 
+"Šorum", "Corum", "Corum", "34.95000077", "40.5199931", 
+"Denizli", "Denizli", "Denizli", "29.08002315", "37.77039349", 
+"Diyarbak_r", "Diyarbakir", "Diyarbakir", "40.23004024", "37.92043601", 
+"Edirne", "Edirne", "Edirne", "26.56999548", "41.67043968", 
+"Elaz__", "Elazig", "Elazig", "39.22999792", "38.67997622", 
+"Erzincan", "Erzincan", "Erzincan", "39.49277258", "39.75264976", 
+"Erzurum", "Erzurum", "Erzurum", "41.29002722", "39.92039146", 
+"Eski_ehir", "Eskisehir", "Eskisehir", "30.52996049", "39.7949986", 
+"Gaziantep", "Gaziantep", "Gaziantep", "37.38499426", "37.07498374", 
+"Giresun", "Giresun", "Giresun", "38.39000452", "40.91300115", 
+"Gªmª_hane", "Gumushane", "Gumushane", "39.48399962", "40.46400013", 
+"Hakk_ri", "Hakkari", "Hakkari", "43.7408337", "37.57443646", 
+"Hatay", "Hatay", "Hatay", "36.12000688", "36.2303583", 
+"Isparta", "Isparta", "Isparta", "30.52996049", "37.76998008", 
+"Mersin", "Mersin", "Mersin", "34.620906", "36.810314", 
+"Istanbul", "Istanbul", "Istanbul", "29.01000159", "41.10499615", 
+"_zmir", "Izmir", "Izmir", "27.15179401", "38.43614968", 
+"Kars", "Kars", "Kars", "43.09746212", "40.60846315", 
+"Kastamonu", "Kastamonu", "Kastamonu", "33.78300349", "41.38900215", 
+"Kayseri", "Kayseri", "Kayseri", "35.49001949", "38.73495994", 
+"K_r_ehir", "Kirsehir", "Kirsehir", "34.1710026", "39.14199917", 
+"Kilis", "Kilis", "Kilis", "37.11999752", "36.7204059", 
+"Kocaeli", "Kocaeli", "Kocaeli", "29.93061723", "40.77602399", 
+"Konya", "Konya", "Konya", "32.47500972", "37.87501243", 
+"Kªtahya", "Kutahya", "Kutahya", "29.92999711", "39.42000856", 
+"Malatya", "Malatya", "Malatya", "38.30002885", "38.37043439", 
+"Manisa", "Manisa", "Manisa", "27.43996822", "38.63039268", 
+"Kahramanmara_", "K.maras", "K.maras", "36.925666", "37.56761", 
+"Mardin", "Mardin", "Mardin", "40.74272213", "37.31150677", 
+"Mu_la", "Mugla", "Mugla", "28.36389115", "37.21637046", 
+"Mu_", "Mus", "Mus", "41.49693966", "38.74901593", 
+"Nev_ehir", "Nevsehir", "Nevsehir", "34.72399852", "38.62400404", 
+"Ni_de", "Nigde", "Nigde", "34.69400163", "37.97600412", 
+"Ordu", "Ordu", "Ordu", "37.8699259", "41.00042889", 
+"Rize", "Rize", "Rize", "40.52185705", "41.02084108", 
+"Sakarya", "Sakarya", "Sakarya", "30.40000251", "40.76666114", 
+"Samsun", "Samsun", "Samsun", "36.34366247", "41.27999839", 
+"Siirt", "Siirt", "Siirt", "41.93299858", "37.94400007", 
+"Sinop", "Sinop", "Sinop", "35.1530015", "42.02299802", 
+"__rnak", "Sirnak", "Sirnak", "42.457244", "37.520764", 
+"Tekirda_", "Tekirdag", "Tekirdag", "27.50998979", "40.99086875", 
+"Tokat", "Tokat", "Tokat", "36.56300452", "40.30599617", 
+"Trabzon", "Trabzon", "Trabzon", "39.71999385", "40.97999086", 
+"Tunceli", "Tunceli", "Tunceli", "39.5333015", "39.11670002", 
+"_anl_urfa", "Sanliurfa", "Sanliurfa", "38.79498572", "37.16999086", 
+"U_ak", "Usak", "Usak", "29.4200024", "38.68036379", 
+"Van", "Van", "Van", "43.39997595", "38.49543968", 
+"Yozgat", "Yozgat", "Yozgat", "34.81499749", "39.81799809", 
+"Zonguldak", "Zonguldak", "Zonguldak", "31.78001339", "41.43037681", 
+"Aksaray", "Aksaray", "Aksaray", "34.015205", "38.364952", 
+"Bayburt", "Bayburt", "Bayburt", "40.225666", "40.255179", 
+"Karaman", "Karaman", "Karaman", "33.21501623", "37.18154055", 
+"K_rklareli", "Kirklareli", "Kirklareli", "27.22599962", "41.74299917", 
+"Batman", "Batman", "Batman", "41.14001054", "37.89041201", 
+"Sivas", "Sivas", "Sivas", "37.03498979", "39.74541506", 
+"Bart_n", "Bartin", "Bartin", "32.335026", "41.637215", 
+"Ardahan", "Ardahan", "Ardahan", "42.701989", "41.112556", 
+"I_d_r", "Igdir", "Igdir", "44.046218", "39.92029", 
+"Yalova", "Yalova", "Yalova", "29.282323", "40.657663", 
+"Karabªk", "Karabuk", "Karabuk", "32.60001501", "41.20000327", 
+"K_r_kkale", "Kirikkale", "Kirikkale", "33.52998409", "39.85036989", 
+"Osmaniye", "Osmaniye", "Osmaniye", "36.248106", "37.075769", 
+"Dªzce", "Ducze", "Ducze", "31.165301", "40.845846")
+    
+cap_coord <- as.data.frame(matrix(cap_coord, nrow = 81, byrow = TRUE))
+
+names(cap_coord) <- c("city_tr", "city_en", "prov_en", "long", "lat")
+
+cap_coord <- cap_coord                                              %>%
+  mutate(prov_en = as.vector(prov_en),
+         city_en = as.vector(city_en),
+         city_cn = as.vector(city_tr),
+         cap_long = as.double(as.vector(long)),
+         cap_lat = as.double(as.vector(lat)))                       %>%
+  select(prov_en, city_en, city_tr, cap_long, cap_lat)
+
+ref_data <- read.csv("data/refdata.csv", stringsAsFactors = F)
+
+cap_bubble <- cap_coord                                                 %>%
+  plyr::join(subset(ref_data, year == "Afghanistan"), by = "prov_en")            %>%
+  na.omit()
+
+cap_bar <- cap_coord                                                    %>%
+  plyr::join(ref_data, by = "prov_en")                                  %>%
+  na.omit()                                                             %>%
+  mutate(year = paste("Y", year, sep = ""))                             %>%
+  tidyr::spread(year, population)
+  
+ggplot()                                                                 +
+  geom_polygon(data = trmapdf, aes(long, lat, group = group), 
+               fill = "grey", colour = "white")                        +
+  geom_point(data = cap_bubble, aes(cap_long, cap_lat, size = population), 
+             shape = 21, fill = "red", alpha = .3)                       + 
+   coord_map("polyconic")   +                
+  theme_opts +
+  scale_fill_manual(values=c("black", "white"), guide="none")+
+  scale_size_continuous(range=c(1,20), guide="none")
