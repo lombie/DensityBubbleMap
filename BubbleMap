@@ -145,7 +145,7 @@ names(cap_coord) <- c("city_tr", "city_en", "prov_en", "long", "lat")
 cap_coord <- cap_coord                                              %>%
   mutate(prov_en = as.vector(prov_en),
          city_en = as.vector(city_en),
-         city_cn = as.vector(city_tr),
+         city_tr = as.vector(city_tr),
          cap_long = as.double(as.vector(long)),
          cap_lat = as.double(as.vector(lat)))                       %>%
   select(prov_en, city_en, city_tr, cap_long, cap_lat)
